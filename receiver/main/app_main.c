@@ -5,111 +5,96 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "freertos/queue.h"
+
 #include "esp_log.h"
 #include "driver/spi_slave.h"
 #include "driver/gpio.h"
 
-#define RCV_HOST    HSPI_HOST
+// SPI pins configuration as per your setup
 #define GPIO_MOSI   23
-#define GPIO_MISO   19
+#define GPIO_MISO   19 
 #define GPIO_SCLK   18
 #define GPIO_CS     5
 
+#define RCV_HOST    HSPI_HOST
+
+// Buffer size for SPI transactions
+#define BUFFER_SIZE 128
+
 static const char* TAG = "spi_slave";
 
-// Task to monitor GPIO states
-void gpio_monitor_task(void* pvParameters) {
-    while (1) {
-        ESP_LOGI(TAG, "Pin States - CS:%d, SCLK:%d, MOSI:%d",
-            gpio_get_level(GPIO_CS),
-            gpio_get_level(GPIO_SCLK),
-            gpio_get_level(GPIO_MOSI));
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
-}
-
 void app_main(void) {
-    esp_err_t ret;
-
-    // Configure GPIOs
-    gpio_config_t io_conf = {
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-
-    // Configure MOSI, SCLK, CS as inputs
-    io_conf.pin_bit_mask = (1ULL << GPIO_MOSI) | (1ULL << GPIO_SCLK) | (1ULL << GPIO_CS);
-    gpio_config(&io_conf);
-
-    // Configure MISO as output
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = (1ULL << GPIO_MISO);
-    gpio_config(&io_conf);
-
-    ESP_LOGI(TAG, "GPIOs configured");
-
-    // Start GPIO monitoring task
-    xTaskCreate(gpio_monitor_task, "gpio_monitor", 2048, NULL, 5, NULL);
-
+    //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
         .mosi_io_num = GPIO_MOSI,
         .miso_io_num = GPIO_MISO,
         .sclk_io_num = GPIO_SCLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 32,
-        .flags = SPICOMMON_BUSFLAG_SLAVE,
+        .max_transfer_sz = BUFFER_SIZE,
     };
 
+    //Configuration for the SPI slave interface
     spi_slave_interface_config_t slvcfg = {
         .mode = 0,
         .spics_io_num = GPIO_CS,
         .queue_size = 3,
         .flags = 0,
-        // Try inverting CS polarity
-        // .flags = SPI_SLAVE_POSITIVE_CS  // Add this to try positive CS
+        .post_setup_cb = NULL,
+        .post_trans_cb = NULL
     };
 
-    ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_DISABLED);  // Disabled DMA
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "SPI slave initialization failed: %d", ret);
-        return;
-    }
+    //Initialize SPI slave interface
+    esp_err_t ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
+    ESP_ERROR_CHECK(ret);
 
-    ESP_LOGI(TAG, "SPI slave initialized successfully");
+    //Buffer for receiving data
+    uint8_t* recvbuf = (uint8_t*)heap_caps_malloc(BUFFER_SIZE, MALLOC_CAP_DMA);
+    //Buffer for sending data
+    uint8_t* sendbuf = (uint8_t*)heap_caps_malloc(BUFFER_SIZE, MALLOC_CAP_DMA);
 
-    WORD_ALIGNED_ATTR uint8_t recvbuf[32];
+    //Initialize buffers
+    memset(recvbuf, 0, BUFFER_SIZE);
+    memset(sendbuf, 0, BUFFER_SIZE);
+
+    //Transaction structure
     spi_slave_transaction_t t;
+    memset(&t, 0, sizeof(t));
 
     while (1) {
-        memset(recvbuf, 0xA5, sizeof(recvbuf));
-        memset(&t, 0, sizeof(t));
+        //Clear receive buffer
+        memset(recvbuf, 0, BUFFER_SIZE);
 
-        t.length = 32 * 8;
+        //Set up SPI slave transaction
+        t.length = BUFFER_SIZE * 8;
         t.rx_buffer = recvbuf;
+        t.tx_buffer = sendbuf;
 
-        ESP_LOGI(TAG, "Waiting for transaction...");
-
-        // Print CS state right before transaction
-        ESP_LOGI(TAG, "CS State before transaction: %d", gpio_get_level(GPIO_CS));
-
+        //Enable SPI slave
         ret = spi_slave_transmit(RCV_HOST, &t, portMAX_DELAY);
 
         if (ret == ESP_OK) {
-            ESP_LOGI(TAG, "Transaction complete! Length trans: %d", t.trans_len / 8);
-            printf("Received: ");
-            for (int i = 0; i < 16; i++) {
-                printf("0x%02X ", recvbuf[i]);
-                if ((i + 1) % 8 == 0) printf("\n");
+            //Print received data
+            ESP_LOGI(TAG, "Received %d bytes:", t.trans_len / 8);
+            for (int i = 0; i < t.trans_len / 8; i++) {
+                printf("%02x ", recvbuf[i]);
             }
             printf("\n");
+
+            //Echo received data back
+            memcpy(sendbuf, recvbuf, BUFFER_SIZE);
         }
         else {
-            ESP_LOGE(TAG, "Transaction failed: %d", ret);
+            ESP_LOGE(TAG, "SPI slave transmission failed");
         }
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(100));  // Small delay between transactions
     }
+
+    //Clean up (this part never reaches in this example)
+    free(recvbuf);
+    free(sendbuf);
+    spi_slave_free(RCV_HOST);
 }
