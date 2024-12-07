@@ -1,0 +1,39 @@
+{
+	"name": "ESP-IDF Development",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			"USERNAME": "esp",
+			"USER_UID": "1000",
+			"USER_GID": "1000"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"espressif.esp-idf-extension",
+				"ms-vscode.cpptools",
+				"ms-vscode.cmake-tools",
+				"ms-python.python",
+				"littlefoxteam.vscode-python-test-adapter"
+			],
+			"settings": {
+				"idf.espIdfPath": "/opt/esp/idf",
+				"idf.customExtraPaths": "",
+				"idf.pythonBinPath": "/opt/esp/idf/python_env/idf5.3_py3.10_env/bin/python",
+				"idf.toolsPath": "/opt/esp",
+				"C_Cpp.intelliSenseEngine": "default",
+				"python.testing.pytestEnabled": true,
+				"python.testing.pytestArgs": [
+					"--embedded-services=esp,qemu"
+				]
+			}
+		}
+	},
+	"remoteUser": "esp",
+	"mounts": [
+		"source=/dev,target=/dev,type=bind,consistency=cached"
+	],
+	"privileged": true,
+	"postCreateCommand": "sudo usermod -a -G dialout $USER"
+}
