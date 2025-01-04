@@ -44,16 +44,22 @@ public:
   }
 
   /* 
-    * A static queue and task are used for logging to ensure deterministic behavior, with all memory allocated at compile time. This eliminates heap fragmentation and guarantees memory availability, making it suitable for real-time systems. Trade-offs include fixed memory usage, slightly more complex code, and compile-time stack size determination. Given the logger’s role as a critical system service, these trade-offs are acceptable.
+    * 
+    A static queue and task are used for logging to ensure deterministic behavior, 
+    with all memory allocated at compile time. 
+    This eliminates heap fragmentation and guarantees memory availability, 
+    making it suitable for real-time systems. 
+    Trade-offs include fixed memory usage, slightly more complex code, and compile-time stack size determination. 
+    Given the logger’s role as a critical system service, these trade-offs are acceptable.
     */
   int begin() {
     if (running) {
       return -1;
     }
     mutex = xSemaphoreCreateMutexStatic(&mutex_buffer);
-        if (mutex == NULL) {
+    if (mutex == NULL) {
             return -1;  // Mutex creation failed
-        }
+    }
     static uint8_t storage_area[LOG_QUEUE_SIZE * sizeof(LogMessage)];
     static StaticQueue_t xStaticQueue;
 
@@ -123,7 +129,7 @@ public:
     msg.timestamp = millis();
     strncpy(msg.message, buffer, sizeof(msg.message) - 1);
     msg.message[sizeof(msg.message) - 1] = '\0';
-    xQueueSendToBack(log_queue, &msg, pdMS_TO_TICKS(100));
+    xQueueSendToBack(log_queue, &msg, pdMS_TO_TICKS(10));
   }
 
     private : Logger(uint32_t _baudrate)
@@ -133,10 +139,9 @@ public:
     Logger* logger = static_cast<Logger*>(pvParameters);
     LogMessage msg;
     TickType_t xLastWakeTime = xTaskGetTickCount();
-
     while(true){
 
-        if(xSemaphoreTake(logger->mutex, pdMS_TO_TICKS(100)) == pdTRUE){
+        if(xSemaphoreTake(logger->mutex, pdMS_TO_TICKS(10)) == pdTRUE){
             if(!logger->running){
                 xSemaphoreGive(logger->mutex);
                 break;
@@ -147,7 +152,7 @@ public:
       // HACK PORTMAX_DELAY should be specific
       if (xQueueReceive(logger->log_queue, &msg, portMAX_DELAY) == pdTRUE) {
         if (Serial) {
-          Serial.printf("[%lu] %s\n", msg.timestamp, msg.message);
+          Serial.printf("%lu,%s\n", msg.timestamp, msg.message);
           Serial.flush();
         }
     }
