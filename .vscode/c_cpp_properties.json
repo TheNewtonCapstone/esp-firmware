@@ -1,3 +1,8 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
 {
     "configurations": [
         {
@@ -159,8 +164,8 @@
                 "/home/nyquist/.platformio/packages/framework-espidf/components/perfmon/include",
                 "/home/nyquist/.platformio/packages/framework-espidf/components/spiffs/include",
                 "/home/nyquist/.platformio/packages/framework-espidf/components/wifi_provisioning/include",
-                "",
-                "${workspaceFolder}/components/esp32_encoder/include"
+                "/home/nyquist/projects/newton-esp-firmware/components/esp32_encoder/include",
+                ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
@@ -321,6 +326,7 @@
                     "/home/nyquist/.platformio/packages/framework-espidf/components/perfmon/include",
                     "/home/nyquist/.platformio/packages/framework-espidf/components/spiffs/include",
                     "/home/nyquist/.platformio/packages/framework-espidf/components/wifi_provisioning/include",
+                    "/home/nyquist/projects/newton-esp-firmware/components/esp32_encoder/include",
                     ""
                 ]
             },
