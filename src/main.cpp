@@ -9,7 +9,7 @@
 
 const uint32_t PIN_A = 22;
 const uint32_t PIN_B = 23;
-const int16_t CPR = 2048;
+const int16_t PPR = 512;
 
 const char *TAG = "main";
 
@@ -19,7 +19,7 @@ void task_encoder(void *)
   ESP_ERROR_CHECK(esp_task_wdt_add(NULL));
   ESP_ERROR_CHECK(esp_task_wdt_status(NULL));
 
-  Encoder encoder(PIN_A, PIN_B, CPR);
+  Encoder encoder(PIN_A, PIN_B, PPR);
 
   while (true)
   {
