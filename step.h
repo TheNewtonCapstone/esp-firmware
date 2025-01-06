@@ -7,7 +7,7 @@ const int MAX_SAMPLES = 2000; // 4 seconds of data at 500 Hz
 
 struct StepResponse{
     unsigned long timestamp;
-    float speed;
+    unsigned long speed;
     float step;
     int pwm;
 };

@@ -149,7 +149,7 @@ void loop() {
     Serial.printf("step :%f\n", step);
     int sampleCount = measureStepResponse(step);
     Serial.printf("Step: %.2f, Samples: %d\n\n", step, sampleCount);
-    delay(1000);
+    delay(2000);
   }
   // encoder.update();
   // encoder.getVelocity();
@@ -264,7 +264,7 @@ int measureStepResponse(float step) {
     if (millis() >= nextSampleTime) {
       stepResponseData[sampleCount].timestamp = micros();
       stepResponseData[sampleCount].step = step;
-      stepResponseData[sampleCount].speed = getVelocity();
+      stepResponseData[sampleCount].speed = encoder.getCount();
       stepResponseData[sampleCount].pwm = pwm;
       nextSampleTime += sampleTime;
       sampleCount++;
