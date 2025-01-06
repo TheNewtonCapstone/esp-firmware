@@ -1,0 +1,3 @@
+[submodule "components/newton_actuator"]
+	path = components/newton_actuator
+	url = https://github.com/ThenewtonCapstone/newton_actuator

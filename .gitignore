@@ -1,4 +1,6 @@
+# pc-specific files
 .vscode/
 build/
+platformio/
 sdkconfig
 sdkconfig.old
