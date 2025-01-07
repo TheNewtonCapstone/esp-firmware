@@ -2,6 +2,7 @@
 .vscode/
 .idea/
 
+# temp files
 build/
 platformio/
 sdkconfig

@@ -1,0 +1,15 @@
+PROJECT_NAME           = "newton-esp-firmware"
+OUTPUT_DIRECTORY       = doxygen
+GENERATE_XML          = YES
+XML_OUTPUT            = xml
+INPUT                 = ../include
+FILE_PATTERNS         = *.h *.hpp
+ENABLE_PREPROCESSING  = NO # avoid doxygen to discover includes without being told to do so
+RECURSIVE             = YES
+EXTRACT_PRIVATE       = YES
+EXTRACT_STATIC        = YES
+EXTRACT_PRIV_VIRTUAL  = YES
+HIDE_SCOPE_NAMES      = YES
+FULL_PATH_NAMES       = YES
+STRIP_FROM_PATH       = ../include
+STRIP_FROM_INC_PATH   = ../include
