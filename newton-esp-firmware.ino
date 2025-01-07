@@ -10,7 +10,7 @@
 #define B 23
 
 const float VEL_PERIOD = 0.0005f;
-static constexpr float PPR = 512;
+static constexpr float PPR = 2048;
 static constexpr float PPR_TO_RAD = PI / PPR * -1.0f; 
 
 const int MAX_INTEGRAL = 1000;
@@ -149,7 +149,6 @@ void loop() {
   //     // lastLog = millis();
   //     lastLog = curr_time;
   // }
-  delay(2000);
   // step response
   for(float step = 0.1f; step < .9f; step += 0.1f){
     Serial.printf("step :%f\n", step);
@@ -171,15 +170,21 @@ float getPosition() {
 float getVelocity() {
     static unsigned long prev_time = micros();
     static float prev_pos = 0;
-    const float alpha = 0.9f;
+    const float alpha = 0.7f;
     const float MIN_DT = 0.005f;  // 5ms minimum window
+    const float MAX_DT = MIN_DT * 10;
     // static float filtered_vel = 0;
     
     unsigned long current_time = micros();
     float current_pos = getPosition();
     
     float dt = (float)(current_time - prev_time) / 1000000.0f;
+    if(dt < MIN_DT || dt > MAX_DT){
+      dt = 0.001;
+    }
+    
     float raw_velocity = (current_pos - prev_pos) / dt;
+    float filtered = alpha * prev_pos + raw_velocity * (1 - alpha);
 
     prev_pos = current_pos;
     prev_time = current_time;

@@ -4,7 +4,7 @@ import csv
 # Configuration
 SERIAL_PORT = '/dev/ttyUSB0'  # Replace with your ESP32's serial port
 BAUD_RATE = 115200
-CSV_FILE = 'esp32_data.csv'
+CSV_FILE = 'log/pid_responses/csv/r_1.csv'
 MESSAGES_PER_FILE = 50
 
 

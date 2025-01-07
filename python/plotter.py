@@ -2,10 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Define target value
-TARGET_VELOCITY = 20
+TARGET_VELOCITY = 50
 VELOCITY_RANGE =  478
 NORMALIZED_TARGET_VELOCITY = TARGET_VELOCITY / 100
-file_path = 'log/2021-09-26-20-10-10'
+#file_path = 'log/step_responses/csv/r_4.2'
+file_path = 'log/pid_responses/csv/r_1'
 save_path = file_path + '.png'
 file_path = file_path + '.csv'
 
