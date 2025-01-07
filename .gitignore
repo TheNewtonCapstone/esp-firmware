@@ -1,6 +1,11 @@
-# pc-specific files
+# editor-specific files
 .vscode/
+.idea/
+
 build/
 platformio/
 sdkconfig
 sdkconfig.old
+
+# python envs
+.conda/

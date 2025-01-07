@@ -1,7 +1,8 @@
 #include <stdio.h>
 
-#include "newton/encoder.h"
 #include "newton/actuator.h"
+#include "newton/encoder.h"
+#include "newton/stopwatch.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <esp_log.h>
@@ -31,7 +32,7 @@ void task_encoder(void *)
     float position = encoder.get_position();
     float velocity = encoder.get_velocity();
 
-    printf("%f, %f\n", position, velocity);
+    // printf("%f, %f\n", position, velocity);
   }
 }
 
@@ -47,8 +48,20 @@ void task_actuator(void *)
 
   newton::Actuator actuator(PIN_PWM, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 
+  newton::Stopwatch stopwatch("Actuator");
+
+  stopwatch.start();
   actuator.set_pulse_width(1500);
+
+  stopwatch.lap();
   vTaskDelay(pdMS_TO_TICKS(1200));
+  stopwatch.stop();
+
+  ESP_LOGI(TAG, "Start time: %lld", stopwatch.get_start_time().get_value());
+  ESP_LOGI(TAG, "Pulse width time: %lld", stopwatch.get_lap_duration(0).get_value());
+  ESP_LOGI(TAG, "Task delay time: %lld", stopwatch.get_lap_duration(1).get_value());
+  ESP_LOGI(TAG, "Elapsed time: %lld", stopwatch.get_elapsed_time().get_value());
+  ESP_LOGI(TAG, "End time: %lld", stopwatch.get_end_time().get_value());
 
   ESP_LOGI(TAG, "Starting actuator loop");
 
