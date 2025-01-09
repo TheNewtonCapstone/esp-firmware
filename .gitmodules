@@ -1,0 +1,9 @@
+[submodule "components/newton_esp_actuator"]
+	path = components/newton_esp_actuator
+	url = https://github.com/TheNewtonCapstone/newton-esp-actuator.git
+[submodule "components/newton_esp_stopwatch"]
+	path = components/newton_esp_stopwatch
+	url = https://github.com/TheNewtonCapstone/newton-esp-stopwatch
+[submodule "components/newton_esp_utils"]
+	path = components/newton_esp_utils
+	url = https://github.com/TheNewtonCapstone/newton-esp-utils
