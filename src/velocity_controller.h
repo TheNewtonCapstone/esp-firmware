@@ -17,6 +17,8 @@ namespace newton {
     float get_setpoint() const { return setpoint; }
 
   private:
+    void* control_task(void* arg);
+  private:
       // PID gains
     float kp = 0.08f;
     float ki = 0.4f;
